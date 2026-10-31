@@ -283,6 +283,9 @@ function plural(key, n) {
   return I18N.plural(key, n);
 }
 
+/** calm-home: 24-hour times ("15:05", "15") when Prefs.clock24(), whatever the language's pattern. */
+var CLOCK24 = {'format|h:mm': 'format|HH:mm', 'format|h:mm a': 'format|HH:mm', 'format|h a': 'format|HH:mm'};
 function formatDate(key, at) {
+  if (CLOCK24[key] && typeof Prefs !== 'undefined' && Prefs.clock24()) key = CLOCK24[key];
   return I18N.formatDate(key, at);
 }

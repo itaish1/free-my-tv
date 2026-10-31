@@ -46,9 +46,10 @@ var Place = (function () {
   var tz = zone(TV.zone()), set = CONFIG.latitude !== '' && CONFIG.latitude !== undefined;
   var country = (CONFIG.tmdbRegion || (tz ? tz.country : '') || 'US').toUpperCase();
   return {
-    lat: set ? CONFIG.latitude : tz ? tz.lat : '40.7128',
-    lon: set ? CONFIG.longitude : tz ? tz.lon : '-74.0060',
-    city: CONFIG.city || (!set && tz ? tz.name : ''),
+    // calm-home: Ramat Gan unless config.properties names another place (the TV's time zone would say Jerusalem).
+    lat: set ? CONFIG.latitude : '32.08',
+    lon: set ? CONFIG.longitude : '34.82',
+    city: CONFIG.city || (!set ? 'Ramat Gan' : ''),
     country: country,
     currency: (CONFIG.currency || (country === 'BR' ? 'BRL' : EURO.test(country) ? 'EUR' : 'USD')).toUpperCase(),
     /** Fahrenheit for TVs in the US (by their time zone, or their language when it doesn't tell). */
@@ -66,18 +67,20 @@ var Prefs = (function () {
   return {
     version: 0,
     language: function () { return pick('language', CONFIG.language || 'auto'); },
-    temperature: function () { return pick('temperature', CONFIG.temperature || 'auto'); },
+    temperature: function () { return pick('temperature', CONFIG.temperature && CONFIG.temperature !== 'auto' ? CONFIG.temperature : 'C'); },
+    /** calm-home: a 24-hour clock unless config.properties says clock_24h=false. */
+    clock24: function () { return CONFIG.clock24 !== false; },
     theme: function () { return pick('theme', CONFIG.theme || 'auto'); },
     weather: function () { return pick('weather', true); },
     /** OK on the screensaver opens the title it shows, in its app; any other key only closes it (off by default). */
     saverWatch: function () { return pick('saverWatch', false) === true; },
     /** What the screensaver shows: 'photos' (the picks' photos, as it always has) or 'clock' (a clock and the weather). */
-    saver: function () { return pick('saver', 'photos') === 'clock' ? 'clock' : 'photos'; },
+    saver: function () { return pick('saver', 'clock') === 'photos' ? 'photos' : 'clock'; },   // calm-home: the clock by default
     /** Dimming over the picture, for a dark room: 'off', 'low', 'medium', 'high' or 'auto' (medium at night). */
     dim: function () { return pick('dim', 'off'); },
     /** The weather card's forecast: 'hours' (the next 6 hours) or 'days' (the next 5 days). */
     forecast: function () { return pick('forecast', 'hours') === 'days' ? 'days' : 'hours'; },
-    quotes: function () { return pick('quotes', CONFIG.showCrypto !== false); },
+    quotes: function () { return false; },   // calm-home: no crypto prices, so Binance is never called
     coin: function (i) { var c = pick('coins', null); return c ? c[i] !== false : true; },
     /** Picks per tab: 3 (as it was) up to 6. */
     cards: function () { var n = pick('cards', 3); return n < 3 ? 3 : n > 6 ? 6 : n; },
@@ -91,7 +94,7 @@ var Prefs = (function () {
     latitude: function () { return pick('latitude', Place.lat); },
     longitude: function () { return pick('longitude', Place.lon); },
     /** The TMDB key typed on the TV (Home Settings → TMDB key), or config.properties' ('' for none). */
-    tmdbKey: function () { return String(pick('tmdbKey', CONFIG.tmdbKey || '')).trim(); },
+    tmdbKey: function () { return ''; },   // calm-home: no picks row, so TMDB is never called
     /** True when the key in use was typed on the TV (Remove takes it back to config.properties'). */
     tmdbKeyOnTV: function () { return v.tmdbKey !== undefined; },
     setCity: function (name, lat, lon) { v.city = name; v.latitude = lat; v.longitude = lon; save(); this.version++; },
@@ -143,14 +146,8 @@ var Data = (function () {
    * tries https first, so a newer TV whose request once timed out doesn't stay on http.
    */
   function getMeteo(path, done) {
-    get('https://' + path, {}, function (err, body) {
-      // A certificate the TV doesn't trust ends as a network error: status 0, or onerror.
-      if (err && /^(no connection|HTTP 0)$/.test(err.message)) {
-        get('http://' + path, {}, done);
-        return;
-      }
-      done(err, body);
-    });
+    // calm-home: HTTPS only. The plain-http fallback was for 2015-2016 TVs that don't trust Let's Encrypt; a 2022 TV does.
+    get('https://' + path, {}, done);
   }
 
   var listeners = [];

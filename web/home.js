@@ -510,9 +510,39 @@
     c.lastChild.textContent = formatDate('format|EEEE, MMMM d', d.getTime());
   }
 
+  // MARK: - calm-home: the weather at the top right of the home screen, and the forecast both it and the screensaver show
+
+  /** The next hours or days (Home Settings → Forecast) as a row of small columns: time, symbol, temperature. */
+  function forecastRow(parent, w, n) {
+    var days = Prefs.forecast() === 'days' && w.days && w.days.length > 0, list = days ? w.days : w.hours;
+    var row = el('div', 'fc', parent);
+    for (var i = 0; list && i < list.length && i < n; i++) {
+      var x = list[i], c = el('div', 'fci', row);
+      el('div', 't', c, days ? Data.weekday(x.at) : Data.hour(x.at));
+      sym(Data.symbol(x.code, days || x.day), c);
+      var t = el('div', 'd', c, Data.degrees(days ? x.max : x.temp));
+      if (days) el('span', 'low', t, Data.degrees(x.min));
+    }
+    return row;
+  }
+
+  /** The top right: the temperature now, the sky, today's high and low, and the forecast under them. */
+  function renderNow() {
+    var box = $('now'), w = Prefs.weather() ? Data.weather : null;
+    box.innerHTML = '';
+    if (!w) return;
+    var head = el('div', 'head', box);
+    sym(Data.symbol(w.code, w.isDay), head);
+    el('span', 'temp', head, Data.degrees(w.temp));
+    el('div', 'cond', box, (Data.city ? Data.city + ' · ' : '') + Data.condition(w.code, w.isDay));
+    el('div', 'range', box, trf('H:{max}', {max: Data.degrees(w.max)}) + '   ' + trf('L:{min}', {min: Data.degrees(w.min)}));
+    forecastRow(box, w, 5);
+  }
+
   /** On the minute, so the clock never runs late (the 30-second refresh could, by up to 30 s). */
   function tickClock() {
     renderClock();
+    renderNow();
     setTimeout(tickClock, 60000 - Date.now() % 60000 + 50);
   }
 
@@ -805,7 +835,10 @@
     rows.push({label: tr('Shelf'), value: '›', shelf: true, step: function (d) { if (d >= 0) openShelfEdit(); }});
     rows.push({label: tr('About this TV'), value: '›', about: true, step: function (d) { if (d >= 0) openAbout(); }});
     if (TV.canOpenSettings) rows.push({label: tr('TV Settings'), value: '›', step: function (d) { if (d >= 0) tvSettings(); }});
-    return rows;
+    // calm-home: no picks, no TMDB key and no crypto, so their rows go too.
+    var keep = [tr('Language'), tr('Temperature'), tr('Theme'), tr('Dim'), tr('Screensaver'), tr('Weather widget'), tr('City'),
+      tr('Forecast'), tr('Shelf'), tr('About this TV'), tr('TV Settings')];
+    return rows.filter(function (r) { return keep.indexOf(r.label) >= 0; });
   }
 
   function cycle(name, values, current, d) {
@@ -1548,12 +1581,14 @@
     if (ambientOn) return;
     var a = $('ambient');
     a.innerHTML = '';
+    a.removeAttribute('data-stamp');
     var shift = el('div', 'shift', a);
     el('div', 'clock', shift);
     el('div', 'date', shift);
     var side = el('div', 'side', shift);
     el('div', 'temp', side);
     el('div', 'cond', side);
+    el('div', 'fcwrap', shift);   // calm-home: the forecast along the bottom
     ambientOn = true;
     setClass(a, 'on', true);
     ambientTimer = setInterval(tickAmbient, 30000);
@@ -1566,8 +1601,18 @@
     a.querySelector('.clock').textContent = formatDate('format|h:mm', d.getTime());
     a.querySelector('.date').textContent = formatDate('format|EEEE, MMMM d', d.getTime());
     // The forecast as it is now (a new one comes every 30 minutes), and only with the weather card on, as on Android.
-    a.querySelector('.temp').textContent = w ? Data.degrees(w.temp) : '';
-    a.querySelector('.cond').textContent = w ? Data.condition(w.code, w.isDay) : '';
+    // calm-home: rebuild the weather and the forecast once a minute, not on every tick (fewer repaints on the TV)
+    var stamp = formatDate('format|h:mm', d.getTime()) + (w ? w.temp + w.code : '');
+    if (a.getAttribute('data-stamp') !== stamp) {
+    a.setAttribute('data-stamp', stamp);
+    var temp = a.querySelector('.temp');
+    temp.innerHTML = '';
+    if (w) { sym(Data.symbol(w.code, w.isDay), temp); temp.appendChild(document.createTextNode(Data.degrees(w.temp))); }
+    a.querySelector('.cond').textContent = w ? (Data.city ? Data.city + ' · ' : '') + Data.condition(w.code, w.isDay) : '';
+    var fc = a.querySelector('.fcwrap');
+    fc.innerHTML = '';
+    if (w) forecastRow(fc, w, 5);
+    }
     // A clock that never moves burns into an OLED: the drift of Android's clock without photos (40 × 26 px, 10 minutes).
     var phase = 2 * Math.PI * (d.getTime() / 1000 % 600) / 600, shift = a.querySelector('.shift');
     shift.style.webkitTransform = shift.style.transform =
@@ -1630,6 +1675,7 @@
     renderShelf();
     renderDrawer();
     renderClock();
+    renderNow();
     checkNight();
     if (st.zone === Z.SETTINGS) renderSettings();
     updateFocus();
@@ -1672,6 +1718,7 @@
     renderQuotes();
     renderCards();
     renderPanels();
+    renderNow();
     checkNight();
   });
 
@@ -1699,6 +1746,8 @@
     loadApps(function () { renderShelf(); renderDrawer(); updateFocus(); Data.refresh(); });
   });
 
+  setClass(body, 'calm', true);   // calm-home (home.css): clock and weather above, the apps below, nothing else
+  if (CONFIG.glassBlur) setClass(body, 'blur', true);   // opt-in frosted glass (backdrop-filter): heavier on the TV's GPU
   I18N.set(Prefs.language());
   checkNight();   // now, from the last forecast: not after the TV lists its apps, with the day look until then
   // LG's screensaver waits only when ours will show: not under a sheet (ours waits there), and not without photos.

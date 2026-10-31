@@ -624,3 +624,94 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .flat .cell.focus .face { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4) !important; }
 .flat #home, .flat #drawer, .flat #cards, .flat .card, .flat #tiles, .flat .tile { will-change: transform; }
 .flat #top { will-change: opacity; }
+
+/* MARK: - calm-home: a big clock, the date and the weather above; the apps on a glass shelf in the bottom quarter, nothing
+   else. Soft daylight colors from sunrise to sunset (Data.isNight), a deep night sky after. Gradients only (no photos, no
+   blur), so the TV draws it once; backdrop-filter only with glass_blur=true, and only where the TV has it. */
+
+.calm #title, .calm #tabs, .calm #cards, .calm #quotes { display: none; }
+.calm #sky .veil, .calm #sky canvas { display: none; }
+.calm #sky .day {
+  background: #EEF2F8;
+  background: -webkit-linear-gradient(-70deg, #E4EEF9 0%, #F3F1EE 55%, #F1E9EC 100%);
+  background: radial-gradient(1100px 700px at 12% 8%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 70%),
+    radial-gradient(1200px 800px at 92% 96%, rgba(255, 223, 196, 0.55), rgba(255, 223, 196, 0) 70%),
+    linear-gradient(160deg, #DCE8F6 0%, #EEF1F4 52%, #F4ECE8 100%);
+}
+.calm #sky .night {
+  background: #0B0E16;
+  background: -webkit-linear-gradient(-70deg, #111A2C 0%, #0A0C14 60%, #120F1C 100%);
+  background: radial-gradient(1100px 700px at 14% 6%, rgba(56, 84, 140, 0.28), rgba(56, 84, 140, 0) 70%),
+    radial-gradient(1200px 800px at 90% 100%, rgba(88, 60, 120, 0.22), rgba(88, 60, 120, 0) 70%),
+    linear-gradient(160deg, #101827 0%, #090B12 58%, #0E0C16 100%);
+}
+
+/* The clock and the date, top left */
+.calm #clock { display: block; left: 112px; top: 150px; font-size: 210px; font-weight: 200; letter-spacing: -0.02em; color: #15161A; -webkit-font-feature-settings: 'tnum'; font-feature-settings: 'tnum'; }
+.calm #clock .date { margin-top: 22px; margin-left: 8px; font-size: 42px; font-weight: 500; color: #3C3D44; }
+.calm.night #clock { color: #F5F5F7; }
+.calm.night #clock .date { color: rgba(245, 245, 247, 0.8); }
+
+/* The weather, top right, under the three round buttons */
+#now { display: none; }
+.calm #now { display: block; position: absolute; right: 112px; top: 196px; width: 820px; text-align: right; color: #15161A; }
+#now .head { font-size: 120px; font-weight: 200; line-height: 1; letter-spacing: -0.02em; -webkit-font-feature-settings: 'tnum'; font-feature-settings: 'tnum'; }
+#now .head .sym { width: 84px; height: 84px; vertical-align: 6px; margin-right: 24px; }
+#now .cond { margin-top: 16px; font-size: 34px; font-weight: 500; color: #3C3D44; }
+#now .range { margin-top: 6px; font-size: 30px; font-weight: 500; color: #55565E; white-space: pre; }
+.calm.night #now { color: #F5F5F7; }
+.calm.night #now .cond { color: rgba(245, 245, 247, 0.82); }
+.calm.night #now .range { color: rgba(245, 245, 247, 0.68); }
+
+/* The forecast: small columns (time, symbol, temperature), on the home screen and in the screensaver */
+.fc { margin-top: 34px; white-space: nowrap; }
+.fci { display: inline-block; width: 124px; text-align: center; vertical-align: top; }
+.fci .t { font-size: 26px; font-weight: 500; opacity: 0.72; }
+.fci .sym { display: block; width: 40px; height: 40px; margin: 14px auto 12px; }
+.fci .d { font-size: 32px; font-weight: 500; -webkit-font-feature-settings: 'tnum'; font-feature-settings: 'tnum'; }
+.fci .low { margin-left: 8px; opacity: 0.6; }
+#now .fc { margin-right: -14px; }
+
+/* The round buttons (Live TV, HDMI, Settings) stay, but quiet until focused */
+.calm .round { opacity: 0.7; -webkit-transition: opacity 0.2s, -webkit-transform 0.2s; transition: opacity 0.2s, transform 0.2s; }
+.calm .round.focus { opacity: 1; }
+
+/* The shelf: frosted glass, softer and rounder */
+.calm #platter {
+  border-radius: 72px;
+  background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.5));
+  background: linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.5));
+  box-shadow: 0 24px 60px rgba(40, 52, 80, 0.12), inset 0 1.5px 0 #FFF, inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+.calm.night #platter {
+  background: -webkit-linear-gradient(top, rgba(40, 44, 58, 0.72), rgba(20, 22, 30, 0.62));
+  background: linear-gradient(rgba(40, 44, 58, 0.72), rgba(20, 22, 30, 0.62));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35), inset 0 1.5px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+.calm .tile { border-radius: 30px; box-shadow: 0 6px 18px rgba(30, 40, 70, 0.12); }
+.calm.night .tile { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3); }
+
+/* glass_blur=true: real frosted glass where the TV can draw it (Tizen 6.5 can; heavier on its GPU, so off by default) */
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .calm.blur #platter { -webkit-backdrop-filter: blur(28px) saturate(1.3); backdrop-filter: blur(28px) saturate(1.3); }
+  .calm.blur #platter { background: rgba(255, 255, 255, 0.38); }
+  .calm.blur.night #platter { background: rgba(30, 32, 42, 0.45); }
+}
+
+/* The screensaver (Ambient): by day bright with dark type, by night near-black with soft white type */
+.calm #ambient {
+  background: #EEF2F8;
+  background: linear-gradient(160deg, #D9E5F3 0%, #ECEFF3 52%, #F2E8E3 100%);
+  color: #15161A;
+}
+.calm.night #ambient { background: #05070C; background: linear-gradient(160deg, #0A1020 0%, #04050A 60%, #08070E 100%); color: #ECECF0; }
+.calm #ambient .clock { left: 112px; top: 200px; font-size: 260px; color: inherit; }
+.calm #ambient .date { left: 122px; top: 486px; font-size: 44px; color: #3C3D44; }
+.calm #ambient .side { right: 112px; top: 230px; width: 820px; color: inherit; }
+.calm #ambient .temp { font-size: 132px; }
+.calm #ambient .temp .sym { width: 92px; height: 92px; vertical-align: 8px; margin-right: 26px; }
+.calm #ambient .cond { margin-top: 14px; font-size: 34px; color: #3C3D44; }
+.calm #ambient .fcwrap { position: absolute; left: 108px; top: 700px; }
+.calm #ambient .fc { margin-top: 0; }
+.calm #ambient .fci { width: 150px; }
+.calm.night #ambient .date, .calm.night #ambient .cond { color: rgba(236, 236, 240, 0.72); }
