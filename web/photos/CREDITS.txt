@@ -1,0 +1,63 @@
+Background photos (web/photos/)
+===============================
+
+Bundled in the app; nothing is downloaded at runtime. Each photo was taken from Wikimedia Commons, where it is published
+under CC0 1.0 (public domain dedication), originally from Unsplash (photos uploaded to Unsplash before June 2017 were
+released under CC0). Cropped to 16:9, resized to 1920x1080 and re-encoded as JPEG. CC0 requires no attribution; the
+photographers are credited here anyway.
+
+day-1.jpg  (day)
+  Title:        Sun shining on a lake (Unsplash).jpg
+  Photographer: Justin Luebke jluebke
+  Commons page: https://commons.wikimedia.org/wiki/File:Sun_shining_on_a_lake_(Unsplash).jpg
+  Original:     https://unsplash.com/photos/ARSCXacOtkY
+  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+
+day-2.jpg  (day)
+  Title:        Pond over a lake (Unsplash).jpg
+  Photographer: Koen Rayer koenrayer
+  Commons page: https://commons.wikimedia.org/wiki/File:Pond_over_a_lake_(Unsplash).jpg
+  Original:     https://unsplash.com/photos/zDEy_rlUkt0
+  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+
+day-3.jpg  (day)
+  Title:        Mountains by the lake (Unsplash).jpg
+  Photographer: Georgia Dixon georgiadixon
+  Commons page: https://commons.wikimedia.org/wiki/File:Mountains_by_the_lake_(Unsplash).jpg
+  Original:     https://unsplash.com/photos/txuZ6ATkPMk
+  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+
+day-4.jpg  (day)
+  Title:        Lake Placid, NY (Unsplash).jpg
+  Photographer: Alex Shutin fiveamstories
+  Commons page: https://commons.wikimedia.org/wiki/File:Lake_Placid,_NY_(Unsplash).jpg
+  Original:     https://unsplash.com/photos/kKvQJ6rK6S4
+  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+
+night-1.jpg  (evening/night)
+  Title:        Mountainous landscape at dusk (Unsplash).jpg
+  Photographer: Joey Kyber jtkyber1
+  Commons page: https://commons.wikimedia.org/wiki/File:Mountainous_landscape_at_dusk_(Unsplash).jpg
+  Original:     https://unsplash.com/photos/Qcvjbkw1N0M
+  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+
+night-2.jpg  (evening/night)
+  Title:        Peloponnese sunset over mountains and water (Unsplash).jpg
+  Photographer: Joe deSousa mustangjoe
+  Commons page: https://commons.wikimedia.org/wiki/File:Peloponnese_sunset_over_mountains_and_water_(Unsplash).jpg
+  Original:     https://unsplash.com/photos/0MGhdhObDXA
+  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+
+night-3.jpg  (evening/night)
+  Title:        MountainsWithStars.jpg
+  Photographer: Teddy Kelley
+  Commons page: https://commons.wikimedia.org/wiki/File:MountainsWithStars.jpg
+  Original:     https://web.archive.org/web/20161220154656/https://unsplash.com/photos/_4Ib-a8g9aA
+  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+
+night-4.jpg  (evening/night)
+  Title:        Yosemite cliff under stars (Unsplash).jpg
+  Photographer: Jordan McQueen jordanfmcqueen
+  Commons page: https://commons.wikimedia.org/wiki/File:Yosemite_cliff_under_stars_(Unsplash).jpg
+  Original:     https://unsplash.com/photos/DgEA7saT8FQ
+  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)

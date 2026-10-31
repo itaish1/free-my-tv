@@ -15,7 +15,7 @@ import translate  # noqa: E402  (the catalogues and the keys the web app uses)
 
 GENERIC = {'tmdbKey': '', 'tmdbRegion': '', 'latitude': '', 'longitude': '', 'city': '', 'language': 'auto',
            'currency': '', 'temperature': 'auto', 'theme': 'auto', 'showCrypto': True, 'hideAnimation': False, 'hideApps': [],
-           'shelfApps': [], 'drawerFirst': False, 'openPicksIn': 'apps', 'clock24': True, 'glassBlur': False}
+           'shelfApps': [], 'drawerFirst': False, 'openPicksIn': 'apps', 'clock24': True, 'glassBlur': False, 'photos': True}
 
 
 def config_from_args(args):
@@ -68,6 +68,7 @@ def read_config(path):
         'drawerFirst': values.get('drawer_first', 'false').lower() == 'true',
         'clock24': values.get('clock_24h', 'true').lower() != 'false',
         'glassBlur': values.get('glass_blur', 'false').lower() == 'true',
+        'photos': values.get('background_photos', 'true').lower() != 'false',
         'openPicksIn': 'nuvio' if values.get('open_picks_in', '').strip().lower() == 'nuvio' else 'apps',
     }
 
@@ -96,6 +97,10 @@ def files(config, made_by):
             continue
         with open(os.path.join(web, name), 'rb') as f:
             out[name] = f.read()
+    photos = os.path.join(web, 'photos')   # calm-photos: the background photos and their CREDITS.txt
+    for name in sorted(os.listdir(photos)) if os.path.isdir(photos) else []:
+        with open(os.path.join(photos, name), 'rb') as f:
+            out['photos/' + name] = f.read()
     icons = os.path.join(web, 'icons')
     for name in sorted(os.listdir(icons)):
         with open(os.path.join(icons, name), 'rb') as f:

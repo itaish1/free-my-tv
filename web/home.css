@@ -715,3 +715,58 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .calm #ambient .fc { margin-top: 0; }
 .calm #ambient .fci { width: 150px; }
 .calm.night #ambient .date, .calm.night #ambient .cond { color: rgba(236, 236, 240, 0.72); }
+
+/* MARK: - calm-photos (background_photos=true): a landscape behind everything, a bright set by day and a dark one at
+   night (home.js: tickPhotos). White type over a soft scrim at the top reads on every photo; the shelf is more opaque
+   glass. Photos only crossfade (opacity), and nothing on them moves, so the TV composites them once. */
+
+.ph {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+  background-size: cover; background-position: center;
+  opacity: 0; -webkit-transition: opacity 2.5s; transition: opacity 2.5s;
+}
+.ph.on { opacity: 1; }
+.photos .scrim {
+  position: absolute; left: 0; top: 0; width: 1920px; height: 1080px;
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.2) 42%, rgba(0, 0, 0, 0) 62%, rgba(0, 0, 0, 0.18) 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.2) 42%, rgba(0, 0, 0, 0) 62%, rgba(0, 0, 0, 0.18) 100%);
+}
+.photos.night .scrim {
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 45%, rgba(0, 0, 0, 0.12) 65%, rgba(0, 0, 0, 0.3) 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.3) 45%, rgba(0, 0, 0, 0.12) 65%, rgba(0, 0, 0, 0.3) 100%);
+}
+
+/* White type, with a soft shadow for the bright skies */
+.photos #clock, .photos #now, .photos.night #clock, .photos.night #now { color: #FFF; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35); }
+.photos #clock .date, .photos #now .cond, .photos.night #clock .date, .photos.night #now .cond { color: rgba(255, 255, 255, 0.92); }
+.photos #now .range, .photos.night #now .range { color: rgba(255, 255, 255, 0.85); }
+.photos .fci .t { opacity: 0.85; }
+
+/* The shelf: more opaque glass, so the icons sit on a calm surface whatever is in the photo */
+.photos #platter {
+  background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.66));
+  background: linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.66));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22), inset 0 1.5px 0 #FFF, inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+}
+.photos.night #platter {
+  background: -webkit-linear-gradient(top, rgba(32, 34, 44, 0.8), rgba(18, 19, 26, 0.72));
+  background: linear-gradient(rgba(32, 34, 44, 0.8), rgba(18, 19, 26, 0.72));
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), inset 0 1.5px 0 rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .photos.blur #platter { background: rgba(255, 255, 255, 0.5); }
+  .photos.blur.night #platter { background: rgba(26, 28, 38, 0.55); }
+}
+
+/* The screensaver: the same photo, the same scrim, white type; the type drifts, the photo stays */
+.photos #ambient, .photos.night #ambient { color: #FFF; }
+.photos #ambient .clock, .photos #ambient .side, .photos #ambient .date, .photos #ambient .fcwrap { text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35); }
+.photos #ambient .date, .photos #ambient .cond, .photos.night #ambient .date, .photos.night #ambient .cond { color: rgba(255, 255, 255, 0.92); }
+.photos #ambient .scrim {
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.22) 50%, rgba(0, 0, 0, 0.3) 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.22) 50%, rgba(0, 0, 0, 0.3) 100%);
+}
+.photos.night #ambient .scrim {
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.32) 50%, rgba(0, 0, 0, 0.42) 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.32) 50%, rgba(0, 0, 0, 0.42) 100%);
+}

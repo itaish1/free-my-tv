@@ -1483,9 +1483,51 @@
 
   var lastNight = null;
 
+  // MARK: - calm-photos: a landscape behind the home screen and the screensaver; a bright set by day, a dark one at night
+
+  var PHOTOS = {day: ['photos/day-1.jpg', 'photos/day-2.jpg', 'photos/day-3.jpg', 'photos/day-4.jpg'],
+    night: ['photos/night-1.jpg', 'photos/night-2.jpg', 'photos/night-3.jpg', 'photos/night-4.jpg']};
+  var PHOTO_EVERY = 5 * 60000, photo = {set: '', i: 0, at: 0, url: ''};
+
+  /** Two layers that crossfade (opacity only), and a scrim over them that keeps the type readable. */
+  function photoLayers(parent) {
+    var first = parent.querySelector('canvas') || parent.querySelector('.shift');   // over the gradients, under the type
+    for (var i = 0; i < 2; i++) parent.insertBefore(el('div', 'ph'), first);
+    parent.insertBefore(el('div', 'scrim'), first);
+  }
+
+  function showPhoto(parent, url) {
+    var a = parent.querySelectorAll('.ph');
+    if (a.length < 2) return;
+    var on = hasClass(a[0], 'on') ? a[0] : hasClass(a[1], 'on') ? a[1] : null, next = on === a[0] ? a[1] : a[0];
+    if (on && on.getAttribute('data-url') === url) return;
+    next.style.backgroundImage = 'url(' + url + ')';
+    next.setAttribute('data-url', url);
+    setClass(next, 'on', true);
+    if (on) setClass(on, 'on', false);
+  }
+
+  /** The set follows the day/night look; within it, the next photo every 5 minutes, shown once it has loaded. */
+  function tickPhotos() {
+    if (!hasClass(body, 'photos')) return;
+    var set = hasClass(body, 'night') ? 'night' : 'day', list = PHOTOS[set], now = Date.now();
+    if (set !== photo.set) { photo.set = set; photo.i = Math.floor(now / PHOTO_EVERY) % list.length; photo.at = now; }
+    else if (now - photo.at >= PHOTO_EVERY) { photo.i = (photo.i + 1) % list.length; photo.at = now; }
+    var url = list[photo.i];
+    if (url === photo.url) return;
+    var img = new Image();
+    img.onload = function () {
+      photo.url = url;
+      showPhoto($('sky'), url);
+      if (ambientOn) showPhoto($('ambient'), url);
+    };
+    img.src = url;
+  }
+
   function checkNight() {
     var night = Data.isNight(Date.now());
     setClass(body, 'night', night);
+    tickPhotos();
     if (night === lastNight) return;
     lastNight = night;
     document.documentElement.style.background = night ? '#0B0B0D' : '';
@@ -1583,6 +1625,7 @@
     a.innerHTML = '';
     a.removeAttribute('data-stamp');
     var shift = el('div', 'shift', a);
+    if (hasClass(body, 'photos')) { photoLayers(a); if (photo.url) showPhoto(a, photo.url); }
     el('div', 'clock', shift);
     el('div', 'date', shift);
     var side = el('div', 'side', shift);
@@ -1747,7 +1790,8 @@
   });
 
   setClass(body, 'calm', true);   // calm-home (home.css): clock and weather above, the apps below, nothing else
-  if (CONFIG.glassBlur) setClass(body, 'blur', true);   // opt-in frosted glass (backdrop-filter): heavier on the TV's GPU
+  if (CONFIG.glassBlur) setClass(body, 'blur', true);
+  if (CONFIG.photos !== false) { setClass(body, 'photos', true); photoLayers($('sky')); }   // calm-photos   // opt-in frosted glass (backdrop-filter): heavier on the TV's GPU
   I18N.set(Prefs.language());
   checkNight();   // now, from the last forecast: not after the TV lists its apps, with the day look until then
   // LG's screensaver waits only when ours will show: not under a sheet (ours waits there), and not without photos.
