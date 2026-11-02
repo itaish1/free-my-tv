@@ -10,6 +10,12 @@
   src: url('fonts/InterVariable.ttf') format('truetype');
   font-weight: 100 900;
 }
+/* couch-look: the tall clock face, as on couch-tv (SIL OFL 1.1, fonts/OFL-Antonio.txt) */
+@font-face {
+  font-family: 'Antonio';
+  src: url('fonts/Antonio-Light.ttf') format('truetype');
+  font-weight: 300;
+}
 
 html, body {
   margin: 0;
@@ -769,4 +775,131 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .photos.night #ambient .scrim {
   background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.32) 50%, rgba(0, 0, 0, 0.42) 100%);
   background: linear-gradient(rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.32) 50%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+/* MARK: - couch-look: couch-tv's look (github.com/Seagey/couch-tv, MIT), redrawn in our own CSS for the TV. The photo full
+   bleed under a scrim dark at the top and the bottom; the date and the weather now centered at the top; a tall Antonio
+   clock of white glass (a gradient fill clipped to the digits, a light rim, a soft drop shadow); a glass weather pill under
+   it; the apps as square icons in a dark glass dock 46 px above the bottom edge. Still no backdrop-filter unless
+   glass_blur=true: the glass is a semi-opaque fill with an inset rim, which the TV draws once. Only transform and opacity
+   animate. Selectors carry .couch.calm so they win over the calm and photos rules above. */
+
+.couch.photos .scrim {
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0.12) 34%, rgba(0, 0, 0, 0.04) 58%, rgba(0, 0, 0, 0.38) 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0.12) 34%, rgba(0, 0, 0, 0.04) 58%, rgba(0, 0, 0, 0.38) 100%);
+}
+.couch.photos.night .scrim {
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.3) 36%, rgba(0, 0, 0, 0.2) 60%, rgba(0, 0, 0, 0.55) 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.3) 36%, rgba(0, 0, 0, 0.2) 60%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* The date and the weather now, one line centered at the top */
+.couch.calm #clock { left: 0; top: 0; width: 1920px; height: 1080px; text-align: center; font-size: 34px; color: #FFF; text-shadow: none; }
+.couch.calm #clock .date, .couch.calm #ambient .date {
+  position: absolute; left: 0; top: 92px; width: 1920px; margin: 0; text-align: center;
+  font-family: 'Inter', sans-serif; font-size: 36px; font-weight: 500; letter-spacing: 0.01em; line-height: 44px;
+  color: #FFF; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+}
+.couch .date .wx { margin-left: 26px; white-space: nowrap; }
+.couch .date .wx::before { content: '\00B7'; margin-right: 26px; opacity: 0.7; }
+.couch .date .wx .sym { width: 36px; height: 36px; margin-right: 12px; vertical-align: -6px; }
+
+/* The clock: tall Antonio digits of white glass */
+.couch.calm #clock .time, .couch.calm #ambient .clock {
+  position: absolute; left: 0; width: 1920px; text-align: center;
+  font-family: 'Antonio', 'Inter', sans-serif; font-weight: 300; letter-spacing: -0.02em; line-height: 1; padding-bottom: 0.08em;
+  -webkit-font-feature-settings: 'tnum'; font-feature-settings: 'tnum';
+  color: #FFF; text-shadow: none;
+}
+.couch.calm #clock .time { top: 120px; font-size: 400px; }
+.couch.calm #ambient .clock { top: 135px; font-size: 470px; }
+/* Where the TV clips a fill to text (Chromium has for years): a sheen from the top left, a rim, a drop shadow */
+@supports (-webkit-background-clip: text) {
+  .couch.calm #clock .time, .couch.calm #ambient .clock {
+    color: transparent;
+    background: -webkit-linear-gradient(290deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.78) 42%, rgba(255, 255, 255, 0.58) 58%, rgba(255, 255, 255, 0.82) 100%);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.78) 42%, rgba(255, 255, 255, 0.58) 58%, rgba(255, 255, 255, 0.82) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.6);
+    -webkit-filter: drop-shadow(0 6px 28px rgba(0, 0, 0, 0.22));
+    filter: drop-shadow(0 6px 28px rgba(0, 0, 0, 0.22));
+  }
+  /* At night the glass is dimmer, so it doesn't glow in a dark room */
+  .couch.calm.night #clock .time, .couch.calm.night #ambient .clock {
+    background: -webkit-linear-gradient(290deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 42%, rgba(255, 255, 255, 0.42) 58%, rgba(255, 255, 255, 0.64) 100%);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 42%, rgba(255, 255, 255, 0.42) 58%, rgba(255, 255, 255, 0.64) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.42);
+  }
+}
+
+/* The weather pill under the clock: place and sky, high and low, a hairline, the next hours */
+.couch.calm #now, .couch.calm #ambient .fcwrap { left: 0; right: auto; width: 1920px; text-align: center; color: #FFF; text-shadow: none; }
+.couch.calm #now { top: 548px; }
+.couch.calm #ambient .fcwrap { top: 672px; }
+.couch.calm #ambient .side { display: none; }
+.couch .pill {
+  display: inline-block; padding: 20px 38px 20px 44px; border-radius: 48px; white-space: nowrap; text-align: left;
+  background: rgba(22, 20, 28, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+.couch.night .pill { background: rgba(12, 12, 18, 0.46); }
+.couch .pill .info, .couch .pill .split, .couch .pill .fc { display: inline-block; vertical-align: middle; }
+.couch .pill .place { font-size: 34px; font-weight: 600; line-height: 42px; }
+.couch .pill .sky { margin-top: 6px; font-size: 25px; font-weight: 500; line-height: 32px; opacity: 0.82; white-space: pre; }
+.couch .pill .split { width: 1px; height: 96px; margin: 0 30px 0 38px; background: rgba(255, 255, 255, 0.26); }
+.couch .pill .fc { margin: 0; }
+.couch .pill .fci { width: 98px; }
+.couch .pill .fci .t { font-size: 22px; opacity: 0.78; }
+.couch .pill .fci .sym { width: 34px; height: 34px; margin: 10px auto 8px; }
+.couch .pill .fci .d { font-size: 28px; }
+
+/* The round buttons: larger dark glass circles at the top right; focused, white */
+.couch .round {
+  top: 52px; width: 88px; height: 88px; border-radius: 44px; color: #FFF; opacity: 1;
+  background: rgba(22, 20, 28, 0.34);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.couch .round .sym { left: 27px; top: 27px; width: 34px; height: 34px; }
+.couch .round.focus { background: #FFF; color: #1D1D1F; box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32); }
+.couch .round .tip, .couch.night .round.focus .tip { color: #FFF; text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
+
+/* The dock: dark glass, a light rim, square icons */
+.couch.calm #platter, .couch.calm.night #platter {
+  border-radius: 46px;
+  background: rgba(26, 22, 30, 0.36);
+  box-shadow: inset 0 0 0 1px rgba(255, 225, 235, 0.16), inset 0 1px 0 rgba(255, 228, 236, 0.16), 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+.couch.calm.night #platter { background: rgba(14, 12, 18, 0.5); }
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .couch.calm.blur #platter, .couch.calm.blur.night #platter { -webkit-backdrop-filter: blur(30px) saturate(1.25); backdrop-filter: blur(30px) saturate(1.25); background: rgba(30, 20, 28, 0.3); }
+}
+.couch .more { color: rgba(255, 255, 255, 0.7); }
+.couch.calm .tile, .couch.calm.night .tile { border-radius: 28px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.26); }
+.couch .tile .word { font-size: 24px; letter-spacing: 0; }
+/* Unfocused icons a shade darker (couch-tv dims them with a filter; a veil costs the TV less) */
+.couch .tile::after { height: auto; bottom: 0; background: rgba(0, 0, 0, 0.16); opacity: 1; z-index: 1; }
+.couch .tile.focus::after { opacity: 0; }
+/* Focused: larger, raised, with a white ring (drawn inside, so it shows where shadows are off, see .flat) */
+.couch .tile::before {
+  content: ''; position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 2;
+  border: 4px solid #FFF; border-radius: 28px; opacity: 0;
+  -webkit-transition: opacity 0.17s; transition: opacity 0.17s;
+}
+.couch .tile.focus::before { opacity: 1; }
+.couch.calm .tile.focus, .couch.calm.night .tile.focus {
+  -webkit-transform: translateY(-10px) scale(1.16); transform: translateY(-10px) scale(1.16);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
+}
+
+/* The screensaver: the same face without the dock; a darker, quieter scrim */
+.couch.photos #ambient .scrim {
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.14) 40%, rgba(0, 0, 0, 0.1) 62%, rgba(0, 0, 0, 0.36) 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.14) 40%, rgba(0, 0, 0, 0.1) 62%, rgba(0, 0, 0, 0.36) 100%);
+}
+.couch.photos.night #ambient .scrim {
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.36) 45%, rgba(0, 0, 0, 0.5) 100%);
+  background: linear-gradient(rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.36) 45%, rgba(0, 0, 0, 0.5) 100%);
 }

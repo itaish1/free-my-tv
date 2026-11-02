@@ -1,0 +1,13 @@
+Fonts bundled with the web app (couch-look)
+
+Antonio-Light.ttf
+  Antonio by Vernon Adams and the Antonio Project Authors (https://github.com/googlefonts/antonioFont),
+  SIL Open Font License 1.1 (OFL-Antonio.txt; no Reserved Font Name).
+  Taken from https://github.com/google/fonts/tree/main/ofl/antonio (Antonio[wght].ttf, sha256
+  9e95a2258ecdf3e45c72c5bbea1c4cd350e8f7bebc87c9dba53b29b1890b8903) and fixed at weight 300 with overlapping
+  contours removed (fontTools varLib.instancer), so the glass clock's outline draws clean on the TV.
+  Used for the big clock, as in couch-tv (https://github.com/Seagey/couch-tv, MIT, Copyright (c) 2026 Seagey),
+  whose look the couch-look style follows. No couch-tv code, images or files are copied; its look is redrawn
+  in our own CSS (web/home.css, "couch-look").
+
+Inter (InterVariable.ttf, OFL.txt) comes from app/assets/fonts; see the README.

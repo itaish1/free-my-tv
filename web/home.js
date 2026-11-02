@@ -87,6 +87,9 @@
   // Apps shown at once, as on Android: 8 (today's smallest tiles, 178 wide); the shelf scrolls for the rest. The
   // built-in list keeps 8 too.
   var SHELF_VISIBLE = 8, FEW_APPS = 8;
+  // couch-look (home.css): couch-tv's look on the calm home: a tall centered clock, the date and the weather above it, a
+  // glass weather pill under it, and the apps as square icons in a dark glass dock. Looks only; nothing else changes.
+  var COUCH = CONFIG.look !== 'calm';
 
   function shelfKey(app) {
     for (var i = 0; i < SHELF.length; i++) if (SHELF[i][1].test(app.id) || SHELF[i][2].test(app.title)) return SHELF[i];
@@ -400,7 +403,7 @@
     var defs = [['live_tv', tr('light|Live TV')], ['hdmi', tr('HDMI Inputs')], ['settings', tr('light|Settings')]];
     for (var b = 0; b < 3; b++) {
       var r = el('button', 'round' + (b === 2 ? ' last' : ''), buttons);
-      r.style.left = (1596 + 88 * b) + 'px';
+      r.style.left = (COUCH ? 1768 - 104 * (2 - b) : 1596 + 88 * b) + 'px';
       sym(defs[b][0], r);
       el('div', 'tip', r, defs[b][1]);
       hover(r, Z.TOP, 3 + b);
@@ -508,6 +511,7 @@
     var d = new Date(), c = $('clock');
     c.firstChild.textContent = formatDate('format|h:mm', d.getTime());
     c.lastChild.textContent = formatDate('format|EEEE, MMMM d', d.getTime());
+    if (COUCH && Prefs.weather() && Data.weather) dateWeather(c.lastChild, Data.weather);
   }
 
   // MARK: - calm-home: the weather at the top right of the home screen, and the forecast both it and the screensaver show
@@ -530,6 +534,7 @@
   function renderNow() {
     var box = $('now'), w = Prefs.weather() ? Data.weather : null;
     box.innerHTML = '';
+    if (COUCH) { if (w) { dateWeather($('clock').lastChild, w); weatherPill(box, w); } return; }
     if (!w) return;
     var head = el('div', 'head', box);
     sym(Data.symbol(w.code, w.isDay), head);
@@ -537,6 +542,27 @@
     el('div', 'cond', box, (Data.city ? Data.city + ' · ' : '') + Data.condition(w.code, w.isDay));
     el('div', 'range', box, trf('H:{max}', {max: Data.degrees(w.max)}) + '   ' + trf('L:{min}', {min: Data.degrees(w.min)}));
     forecastRow(box, w, 5);
+  }
+
+  /** couch-look: the weather now after the date, on the same line ("Monday, November 2  ☁ 25°"), as couch-tv does. */
+  function dateWeather(line, w) {
+    var old = line.querySelector('.wx');
+    if (old) line.removeChild(old);
+    var x = el('span', 'wx', line);
+    sym(Data.symbol(w.code, w.isDay), x);
+    x.appendChild(document.createTextNode(Data.degrees(w.temp)));
+  }
+
+  /** couch-look: one glass pill under the clock: the place, the sky, today's high and low, then the next hours. */
+  function weatherPill(parent, w) {
+    var pill = el('div', 'pill', parent);
+    var info = el('div', 'info', pill);
+    el('div', 'place', info, Data.city || Data.condition(w.code, w.isDay));
+    el('div', 'sky', info, (Data.city ? Data.condition(w.code, w.isDay) + '  ' : '') +
+      trf('H:{max}', {max: Data.degrees(w.max)}) + '  ' + trf('L:{min}', {min: Data.degrees(w.min)}));
+    el('div', 'split', pill);
+    forecastRow(pill, w, 5);
+    return pill;
   }
 
   /** On the minute, so the clock never runs late (the 30-second refresh could, by up to 30 s). */
@@ -551,15 +577,16 @@
   var shelfFirst = 0, tileStep = 0, tileLeft = 0;
 
   function renderShelf() {
-    var n = Math.min(shelf.length, SHELF_VISIBLE), gap = 48, pad = 40;
+    var n = Math.min(shelf.length, SHELF_VISIBLE), gap = COUCH ? 28 : 48, pad = COUCH ? 24 : 40;
     // 16:9 tiles, as on Android: never taller than 126, and the glass keeps its bottom edge.
     var tw = Math.min(126 * 16 / 9, (1760 - Math.max(0, n - 1) * gap) / Math.max(1, n)), th = tw * 9 / 16;
+    if (COUCH) tw = th = 128;   // couch-look: square icons in a dock, its bottom edge 46 px above the screen's
     var width = n * tw + Math.max(0, n - 1) * gap, left = (1920 - width) / 2;
     var platter = $('platter');
     platter.style.display = n ? '' : 'none';
     platter.style.left = (left - pad) + 'px';
     platter.style.width = (width + 2 * pad) + 'px';
-    platter.style.top = (814 + 126 - th) + 'px';
+    platter.style.top = (COUCH ? 1080 - 46 - th - 2 * pad : 814 + 126 - th) + 'px';
     platter.style.height = (th + 2 * pad) + 'px';
     $('quotes').style.right = (1920 - left - width) + 'px';
     var tiles = $('tiles');
@@ -569,10 +596,10 @@
     shelfFirst = Math.max(0, Math.min(shelfFirst, shelf.length - n));
     for (var i = 0; i < shelf.length; i++) {
       var t = el('div', 'tile', tiles);
-      t.style.top = (854 + 126 - th) + 'px';
+      t.style.top = (COUCH ? 1080 - 46 - pad - th : 854 + 126 - th) + 'px';
       t.style.width = tw + 'px';
       t.style.height = th + 'px';
-      face(shelf[i], t, wordFit(shelf[i].title, tw, 30));
+      face(shelf[i], t, COUCH ? wordFit(shelf[i].title, tw, 24) : wordFit(shelf[i].title, tw, 30));
       hover(t, Z.SHELF, i);
     }
     // More apps than fit: a small arrow inside the glass's edge on each side that has more, where no tile reaches
@@ -1642,19 +1669,21 @@
     if (!ambientOn) return;
     var a = $('ambient'), d = new Date(), w = Prefs.weather() ? Data.weather : null;
     a.querySelector('.clock').textContent = formatDate('format|h:mm', d.getTime());
-    a.querySelector('.date').textContent = formatDate('format|EEEE, MMMM d', d.getTime());
+    if (!COUCH) a.querySelector('.date').textContent = formatDate('format|EEEE, MMMM d', d.getTime());
     // The forecast as it is now (a new one comes every 30 minutes), and only with the weather card on, as on Android.
     // calm-home: rebuild the weather and the forecast once a minute, not on every tick (fewer repaints on the TV)
     var stamp = formatDate('format|h:mm', d.getTime()) + (w ? w.temp + w.code : '');
     if (a.getAttribute('data-stamp') !== stamp) {
     a.setAttribute('data-stamp', stamp);
+    if (COUCH) a.querySelector('.date').textContent = formatDate('format|EEEE, MMMM d', d.getTime());
     var temp = a.querySelector('.temp');
     temp.innerHTML = '';
     if (w) { sym(Data.symbol(w.code, w.isDay), temp); temp.appendChild(document.createTextNode(Data.degrees(w.temp))); }
     a.querySelector('.cond').textContent = w ? (Data.city ? Data.city + ' · ' : '') + Data.condition(w.code, w.isDay) : '';
     var fc = a.querySelector('.fcwrap');
     fc.innerHTML = '';
-    if (w) forecastRow(fc, w, 5);
+    if (w && COUCH) { dateWeather(a.querySelector('.date'), w); weatherPill(fc, w); }
+    else if (w) forecastRow(fc, w, 5);
     }
     // A clock that never moves burns into an OLED: the drift of Android's clock without photos (40 × 26 px, 10 minutes).
     var phase = 2 * Math.PI * (d.getTime() / 1000 % 600) / 600, shift = a.querySelector('.shift');
@@ -1789,6 +1818,7 @@
     loadApps(function () { renderShelf(); renderDrawer(); updateFocus(); Data.refresh(); });
   });
 
+  setClass(body, 'couch', COUCH);
   setClass(body, 'calm', true);   // calm-home (home.css): clock and weather above, the apps below, nothing else
   if (CONFIG.glassBlur) setClass(body, 'blur', true);
   if (CONFIG.photos !== false) { setClass(body, 'photos', true); photoLayers($('sky')); }   // calm-photos   // opt-in frosted glass (backdrop-filter): heavier on the TV's GPU

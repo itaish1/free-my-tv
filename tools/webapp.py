@@ -101,6 +101,10 @@ def files(config, made_by):
     for name in sorted(os.listdir(photos)) if os.path.isdir(photos) else []:
         with open(os.path.join(photos, name), 'rb') as f:
             out['photos/' + name] = f.read()
+    fonts = os.path.join(web, 'fonts')   # couch-look: Antonio (SIL OFL 1.1, web/fonts/OFL-Antonio.txt) for the big clock
+    for name in sorted(os.listdir(fonts)) if os.path.isdir(fonts) else []:
+        with open(os.path.join(fonts, name), 'rb') as f:
+            out['fonts/' + name] = f.read()
     icons = os.path.join(web, 'icons')
     for name in sorted(os.listdir(icons)):
         with open(os.path.join(icons, name), 'rb') as f:
