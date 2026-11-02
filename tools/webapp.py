@@ -15,7 +15,8 @@ import translate  # noqa: E402  (the catalogues and the keys the web app uses)
 
 GENERIC = {'tmdbKey': '', 'tmdbRegion': '', 'latitude': '', 'longitude': '', 'city': '', 'language': 'auto',
            'currency': '', 'temperature': 'auto', 'theme': 'auto', 'showCrypto': True, 'hideAnimation': False, 'hideApps': [],
-           'shelfApps': [], 'drawerFirst': False, 'openPicksIn': 'apps', 'clock24': True, 'glassBlur': False, 'photos': True}
+           'shelfApps': [], 'drawerFirst': False, 'openPicksIn': 'apps', 'clock24': True, 'glassBlur': False, 'photos': True,
+           'inputs': []}
 
 
 def config_from_args(args):
@@ -69,8 +70,55 @@ def read_config(path):
         'clock24': values.get('clock_24h', 'true').lower() != 'false',
         'glassBlur': values.get('glass_blur', 'false').lower() == 'true',
         'photos': values.get('background_photos', 'true').lower() != 'false',
+        'inputs': read_inputs(values.get('inputs', '')),
         'openPicksIn': 'nuvio' if values.get('open_picks_in', '').strip().lower() == 'nuvio' else 'apps',
     }
+
+
+# couch-inputs: the glyphs in web/inputs (drawn for this app, MIT like the rest), and the words config.properties may use
+# for each. Brand names pick a generic glyph, never a logo.
+INPUT_ICONS = {
+    'hdmi': ('hdmi',),
+    'box': ('box', 'streamer', 'streaming', 'appletv', 'apple', 'roku', 'firetv', 'fire', 'chromecast', 'shield', 'mibox'),
+    'console': ('console', 'game', 'games', 'gamepad', 'playstation', 'ps4', 'ps5', 'xbox', 'switch', 'nintendo'),
+    'cable': ('cable', 'stb', 'settop', 'set-top', 'satellite', 'sat', 'yes', 'hot', 'decoder'),
+    'pc': ('pc', 'computer', 'laptop', 'mac', 'desktop', 'monitor'),
+    'disc': ('disc', 'bluray', 'blu-ray', 'dvd', 'player'),
+    'sound': ('sound', 'soundbar', 'receiver', 'avr', 'speaker', 'audio'),
+    'camera': ('camera', 'cam'),
+    'antenna': ('antenna', 'tv', 'live', 'tuner', 'aerial'),
+}
+
+
+def input_icon(word):
+    w = re.sub(r'[\s_]+', '', word.lower())
+    for icon, words in INPUT_ICONS.items():
+        if w in words:
+            return icon
+    return ''
+
+
+def read_inputs(text):
+    """inputs=HDMI1:Apple TV:appletv,HDMI2:PlayStation:console → [{key: 'hdmi1', name: 'Apple TV', icon: 'box'}, ...].
+
+    The source is HDMI1-4 (or TV for the tuner); the name and the icon are optional (the TV's own "HDMI 1" and the HDMI
+    glyph). An icon this build doesn't know is an error, so a typo doesn't quietly become the plain one."""
+    out = []
+    for part in [p.strip() for p in text.split(',') if p.strip()]:
+        bits = [b.strip() for b in part.split(':')]
+        src = re.sub(r'[\s_-]+', '', bits[0].lower())
+        m = re.match(r'^hdmi([1-9])$', src)
+        key = 'hdmi' + m.group(1) if m else 'live' if src in ('tv', 'live', 'livetv', 'antenna', 'tuner') else ''
+        if not key:
+            sys.exit('config.properties: inputs: "%s" isn\'t an input (HDMI1 to HDMI4, or TV)' % bits[0])
+        name = bits[1] if len(bits) > 1 else ''
+        icon = input_icon(bits[2]) if len(bits) > 2 and bits[2] else ''
+        if len(bits) > 2 and bits[2] and not icon:
+            sys.exit('config.properties: inputs: no icon "%s" (there are %s)' % (bits[2], ', '.join(INPUT_ICONS)))
+        if any(x['key'] == key for x in out):
+            continue
+        out.append({'key': key, 'name': name, 'icon': icon})
+    return out
 
 
 def coins():
@@ -105,6 +153,10 @@ def files(config, made_by):
     for name in sorted(os.listdir(fonts)) if os.path.isdir(fonts) else []:
         with open(os.path.join(fonts, name), 'rb') as f:
             out['fonts/' + name] = f.read()
+    glyphs = os.path.join(web, 'inputs')   # couch-inputs: the inputs' glyphs (our own drawings) and their LICENSE.txt
+    for name in sorted(os.listdir(glyphs)) if os.path.isdir(glyphs) else []:
+        with open(os.path.join(glyphs, name), 'rb') as f:
+            out['inputs/' + name] = f.read()
     icons = os.path.join(web, 'icons')
     for name in sorted(os.listdir(icons)):
         with open(os.path.join(icons, name), 'rb') as f:

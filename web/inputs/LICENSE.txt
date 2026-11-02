@@ -1,0 +1,4 @@
+The input glyphs in this folder (hdmi, box, console, cable, pc, disc, sound, camera, antenna .svg) were drawn
+for Free My TV (couch-inputs, 2026) from plain shapes: rectangles, circles and lines. They copy no logo or icon set
+and show no brand: "box" is any streaming box (Apple TV, Roku, Chromecast...), "console" any game console.
+They are under the project's MIT License (../../LICENSE), Copyright (c) 2026 Free My TV contributors.

@@ -264,6 +264,7 @@
 
   /** An app's face: its logo on its brand color (or its name, when the icon can't be read). */
   function face(app, box, wordSize) {
+    if (app.input) { inputFace(app, box); return; }
     var k = shelfKey(app);
     var top = k ? k[3][0] : app.color ? darken(app.color, 0.92) : '#2A2A2E';
     var bottom = k ? k[3][1] : app.color ? darken(app.color, 0.62) : '#161618';
@@ -291,7 +292,54 @@
   /** shelf_apps in config.properties: the shelf in that order, by id or name (part of it). */
   var WANTED = (CONFIG.shelfApps || []).map(function (s) { return s.toLowerCase(); });
 
+  // MARK: - couch-inputs: the TV's inputs on the shelf, each with a name and a glyph (web/inputs, our own drawings)
+
+  /** The glyphs, in the order ← → shows them, and the name each gives an input that has none ('' keeps "HDMI 1"). */
+  var INPUT_ICONS = [['hdmi', ''], ['box', 'Streaming box'], ['console', 'Game console'], ['cable', 'Cable box'],
+    ['pc', 'Computer'], ['disc', 'Blu-ray'], ['sound', 'Soundbar'], ['camera', 'Camera'], ['antenna', 'Live TV']];
+  /** inputs= in config.properties: [{key: 'hdmi1', name: 'Apple TV', icon: 'box'}] (tools/webapp.py reads it). */
+  var CONFIG_INPUTS = CONFIG.inputs || [];
+  var inputEntries = [];
+
+  function iconAt(icon) {
+    for (var i = 0; i < INPUT_ICONS.length; i++) if (INPUT_ICONS[i][0] === icon) return i;
+    return 0;
+  }
+
+  /** How an input shows: its name and glyph from Home Settings → Inputs, else from inputs=, else the TV's own name. */
+  function inputLook(x) {
+    var own = x.label || tr('Live TV'), conf = null, tv = Prefs.inputLook(x.key) || {};
+    for (var i = 0; i < CONFIG_INPUTS.length; i++) if (CONFIG_INPUTS[i].key === x.key) conf = CONFIG_INPUTS[i];
+    var icon = tv.icon || (conf && conf.icon) || (x.key === 'live' ? 'antenna' : 'hdmi');
+    var name = tv.name || (conf && conf.name) || '';
+    var plain = INPUT_ICONS[iconAt(icon)][1];
+    return {icon: INPUT_ICONS[iconAt(icon)][0], name: name || (plain ? tr(plain) : own), own: own, named: !!name};
+  }
+
+  /** The inputs as the shelf holds them: the id TV.launch opens (Samsung's source:HDMI:1, LG's HDMI app), input: its key. */
+  function makeInputEntries() {
+    inputEntries = inputs.map(function (x) {
+      var look = inputLook(x);
+      return {id: x.id, title: look.name, input: x.key, glyph: look.icon, port: look.own};
+    });
+  }
+
+  function glyph(icon, parent) {
+    var s = el('span', 'sym', parent);
+    s.style.webkitMaskImage = s.style.maskImage = 'url(inputs/' + icon + '.svg)';
+    return s;
+  }
+
+  /** An input's tile: the same square glass as the apps', its glyph over its name. */
+  function inputFace(entry, box) {
+    box.className += ' input';
+    glyph(entry.glyph, box);
+    el('div', 'name', box, entry.title);
+  }
+
   function pickShelf() {
+    makeInputEntries();
+    var pool = apps.concat(inputEntries);
     if (WANTED.length && Prefs.shelfConfig() !== WANTED.join(',')) {
       Prefs.set('shelf', null);
       Prefs.set('shelfConfig', WANTED.join(','));
@@ -299,13 +347,13 @@
     var chosen = Prefs.shelf(), out = [];
     if (chosen) {
       for (var i = 0; i < chosen.length; i++) {
-        for (var j = 0; j < apps.length; j++) if (apps[j].id === chosen[i]) out.push(apps[j]);
+        for (var j = 0; j < pool.length; j++) if (pool[j].id === chosen[i]) out.push(pool[j]);
       }
     } else if (WANTED.length) {
       for (var w = 0; w < WANTED.length; w++) {
-        for (var k = 0; k < apps.length; k++) {
-          var id = apps[k].id.toLowerCase(), title = apps[k].title.toLowerCase();
-          if ((id.indexOf(WANTED[w]) >= 0 || title.indexOf(WANTED[w]) >= 0) && out.indexOf(apps[k]) < 0) { out.push(apps[k]); break; }
+        for (var k = 0; k < pool.length; k++) {
+          var id = pool[k].id.toLowerCase(), title = pool[k].title.toLowerCase();
+          if ((pool[k].input === WANTED[w] || id.indexOf(WANTED[w]) >= 0 || title.indexOf(WANTED[w]) >= 0) && out.indexOf(pool[k]) < 0) { out.push(pool[k]); break; }
         }
       }
       if (!out.length) out = apps.slice(0, FEW_APPS);
@@ -317,17 +365,32 @@
       }
       if (!out.length) out = apps.slice(0, FEW_APPS);
     }
+    // inputs= puts its inputs first on the shelf, as Samsung's home has its sources first: once for each new inputs=,
+    // so one taken off on the TV stays off.
+    var conf = CONFIG_INPUTS.map(function (c) { return c.key; }).join(','), front = [];
+    for (var c = 0; c < CONFIG_INPUTS.length; c++) {
+      for (var e = 0; e < inputEntries.length; e++) {
+        if (inputEntries[e].input === CONFIG_INPUTS[c].key && out.indexOf(inputEntries[e]) < 0) front.push(inputEntries[e]);
+      }
+    }
+    if (inputs.length && Prefs.inputsConfig() !== conf) {
+      out = front.concat(out);
+      if (chosen) Prefs.set('shelf', out.map(function (a) { return a.id; }));
+      Prefs.set('inputsConfig', conf);
+    } else if (!chosen && inputs.length) {
+      out = front.concat(out);
+    }
     shelf = out;
     others = apps.filter(function (x) { return shelf.indexOf(x) < 0; });
   }
 
   // MARK: - Focus
 
-  var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit', LANG: 'lang', CITY: 'city', KEY: 'key', ABOUT: 'about'};
-  var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0, lang: 0, city: 0, key: 0};
+  var Z = {TOP: 'top', CARDS: 'cards', SHELF: 'shelf', DRAWER: 'drawer', APPS: 'apps', SETTINGS: 'settings', EDIT: 'edit', LANG: 'lang', CITY: 'city', KEY: 'key', ABOUT: 'about', INPUTS: 'inputs'};
+  var st = {zone: Z.SHELF, top: 0, tab: 0, card: 0, shelf: 0, drawer: 0, grid: 0, row: 0, edit: 0, lang: 0, city: 0, key: 0, input: 0};
   var cards = [];
 
-  function sheetOpen() { return st.zone === Z.APPS || st.zone === Z.SETTINGS || st.zone === Z.EDIT || st.zone === Z.LANG || st.zone === Z.CITY || st.zone === Z.KEY || st.zone === Z.ABOUT; }
+  function sheetOpen() { return st.zone === Z.APPS || st.zone === Z.SETTINGS || st.zone === Z.EDIT || st.zone === Z.LANG || st.zone === Z.CITY || st.zone === Z.KEY || st.zone === Z.ABOUT || st.zone === Z.INPUTS; }
 
   function updateFocus() {
     var i, list;
@@ -353,6 +416,7 @@
     $('apps').lastChild.style.webkitTransform = $('apps').lastChild.style.transform = 'translateY(' + (-first * 239) + 'px)';
     focusRows($('settings'), st.row, st.zone === Z.SETTINGS);
     focusRows($('shelfedit'), st.edit, st.zone === Z.EDIT);
+    focusRows($('inputedit'), st.input, st.zone === Z.INPUTS);
     focusRows($('langpick'), st.lang, st.zone === Z.LANG);
     if (langHint) langHint.textContent = (st.lang + 1) + ' / ' + languageChoices().length + '  ·  ' + tr('OK picks, Back cancels.');
     focusRows($('citypick'), st.city, st.zone === Z.CITY);
@@ -649,7 +713,8 @@
     drawerItems = [];
     for (var i = 0; i < inputs.length; i++) {
       var x = inputs[i];
-      drawerItems.push({label: x.label || tr('Live TV'), symbol: x.symbol, off: !x.connected, run: launcher(x.id, x.label)});
+      var look = inputLook(x);   // couch-inputs: the name and glyph given to it
+      drawerItems.push({label: look.name, glyph: look.icon, off: !x.connected, run: launcher(x.id, look.name)});
     }
     drawerInputs = drawerItems.length;
     drawerItems.push({label: tr('All Apps'), symbol: 'apps', run: openApps});
@@ -667,7 +732,8 @@
       var item = drawerItems[k], key = el('div', 'key glass' + (item.off ? ' off' : ''), d);
       key.style.left = xPos + 'px';
       key.style.width = tw + 'px';
-      sym(item.symbol, key);
+      if (item.glyph) glyph(item.glyph, key);
+      else sym(item.symbol, key);
       el('div', 'label', key, item.label);
       hover(key, Z.DRAWER, k);
       xPos += tw + gap;
@@ -791,6 +857,9 @@
     setClass($('shelfedit'), 'open', false);
     setClass($('langpick'), 'open', false);
     setClass($('about'), 'open', false);
+    naming = false;
+    closeField('inputedit');
+    setClass($('inputedit'), 'open', false);
     closeField('citypick');
     closeField('keypick');
     setClass($('citypick'), 'open', false);
@@ -860,11 +929,12 @@
         step: function (d) { cycle('openPicks', ['apps', 'nuvio'], open, d); }});
     }
     rows.push({label: tr('Shelf'), value: '›', shelf: true, step: function (d) { if (d >= 0) openShelfEdit(); }});
+    if (inputs.length) rows.push({label: tr('Inputs'), value: '›', inputsRow: true, step: function (d) { if (d >= 0) openInputEdit(); }});
     rows.push({label: tr('About this TV'), value: '›', about: true, step: function (d) { if (d >= 0) openAbout(); }});
     if (TV.canOpenSettings) rows.push({label: tr('TV Settings'), value: '›', step: function (d) { if (d >= 0) tvSettings(); }});
     // calm-home: no picks, no TMDB key and no crypto, so their rows go too.
     var keep = [tr('Language'), tr('Temperature'), tr('Theme'), tr('Dim'), tr('Screensaver'), tr('Weather widget'), tr('City'),
-      tr('Forecast'), tr('Shelf'), tr('About this TV'), tr('TV Settings')];
+      tr('Forecast'), tr('Shelf'), tr('Inputs'), tr('About this TV'), tr('TV Settings')];
     return rows.filter(function (r) { return keep.indexOf(r.label) >= 0; });
   }
 
@@ -1248,9 +1318,12 @@
 
   function editList() {
     var ids = shelf.map(function (a) { return a.id; });
-    return {ids: ids, rows: apps.slice().sort(function (a, b) {
+    // couch-inputs: the inputs too, off the shelf before the apps
+    return {ids: ids, rows: inputEntries.concat(apps).sort(function (a, b) {
       var ia = ids.indexOf(a.id), ib = ids.indexOf(b.id);
-      if (ia >= 0 || ib >= 0) return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+      if (ia >= 0 || ib >= 0) return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
+      if (!a.input !== !b.input) return a.input ? -1 : 1;
+      if (a.input) return inputEntries.indexOf(a) - inputEntries.indexOf(b);
       return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
     })};
   }
@@ -1265,6 +1338,7 @@
     list.style.height = Math.min(e.rows.length, 7) * 78 + 'px';
     for (var i = 0; i < e.rows.length; i++) {
       var a = e.rows[i], at = e.ids.indexOf(a.id), row = el('div', 'row', holder, a.title);
+      if (a.input && a.port !== a.title) el('span', 'port', row, a.port);
       var place = el('span', 'value', row, at >= 0 ? '#' + (at + 1) : tr('shelf|Off'));
       if (at >= 0) sym('check', place).style.marginLeft = '16px';   // on the shelf: a check, as in the pickers
       hover(row, Z.EDIT, i);
@@ -1301,6 +1375,81 @@
     var again = editList();
     for (var i = 0; i < again.rows.length; i++) if (again.rows[i].id === app.id) st.edit = i;
     renderShelfEdit();
+  }
+
+  // MARK: - couch-inputs: Home Settings → Inputs, a name and a glyph for each
+
+  var naming = false;   // the focused input's name is a text field
+
+  function renderInputEdit() {
+    var box = $('inputedit').firstChild;
+    box.innerHTML = '';
+    var title = el('div', 'title', box);
+    sym('hdmi', title);
+    title.appendChild(document.createTextNode(tr('Inputs')));
+    var list = el('div', 'list', box), holder = el('div', 'rows', list);
+    list.style.height = Math.min(inputs.length, 7) * 78 + 'px';
+    for (var i = 0; i < inputs.length; i++) {
+      var look = inputLook(inputs[i]);
+      if (naming && i === st.input) {
+        var field = textField(holder, Z.INPUTS, look.named ? look.name : '', look.name, look.own);
+        hover(field.parentNode, Z.INPUTS, i);
+        continue;
+      }
+      var row = el('div', 'row', holder, look.own), v = el('span', 'value', row);
+      el('span', 'chev', v, '\u2039');
+      glyph(look.icon, v);
+      el('span', 'nm', v, look.name);
+      el('span', 'chev', v, '\u203A');
+      hover(row, Z.INPUTS, i);
+    }
+    el('div', 'hint', box, naming ? tr('OK saves the name. Back cancels.')
+      : tr('← → change the picture. OK names the input. Shelf puts it on the bar.'));
+    updateFocus();
+  }
+
+  function openInputEdit() {
+    setClass($('settings'), 'open', false);
+    st.zone = Z.INPUTS;
+    st.input = 0;
+    naming = false;
+    renderInputEdit();
+    setClass($('inputedit'), 'open', true);
+    updateFocus();
+  }
+
+  function inputsChanged() {
+    pickShelf();
+    renderShelf();
+    renderDrawer();
+    renderInputEdit();
+  }
+
+  /** ← →: the next glyph; a name typed on the TV stays. */
+  function stepInputIcon(d) {
+    var x = inputs[st.input];
+    if (!x) return;
+    var mine = Prefs.inputLook(x.key) || {}, i = iconAt(inputLook(x).icon);
+    Prefs.setInputLook(x.key, {name: mine.name || '', icon: INPUT_ICONS[(i + d + INPUT_ICONS.length) % INPUT_ICONS.length][0]});
+    inputsChanged();
+  }
+
+  /** OK in the field: the name typed (none: back to the glyph's or the TV's own). */
+  function saveInputName() {
+    var x = inputs[st.input], f = fieldOf('inputedit');
+    if (!x || !f) return;
+    var mine = Prefs.inputLook(x.key) || {};
+    var name = f.value.replace(/^\s+|\s+$/g, '').substring(0, 24);
+    closeField('inputedit');
+    naming = false;
+    Prefs.setInputLook(x.key, {name: name, icon: mine.icon || ''});
+    inputsChanged();
+  }
+
+  function stopNaming() {
+    closeField('inputedit');
+    naming = false;
+    renderInputEdit();
   }
 
   // MARK: - Opening things
@@ -1380,6 +1529,11 @@
       case Z.ABOUT:
         closeAbout();
         return;
+      case Z.INPUTS:
+        if (!naming) { naming = true; renderInputEdit(); openField('inputedit'); }
+        else if (!typingIn('inputedit')) openField('inputedit');
+        else saveInputName();
+        return;
     }
   }
 
@@ -1437,7 +1591,7 @@
         }
         break;
       case Z.EDIT:
-        if (dy) st.edit = Math.max(0, Math.min(apps.length - 1, st.edit + dy));
+        if (dy) st.edit = Math.max(0, Math.min(editList().rows.length - 1, st.edit + dy));
         else if (dx) editShelf(dx);
         break;
       case Z.LANG:
@@ -1448,6 +1602,12 @@
         break;
       case Z.KEY:
         if (dy) st.key = Math.max(0, Math.min(keyRows() - 1, st.key + dy));
+        break;
+      case Z.INPUTS:
+        if (dy) {
+          st.input = Math.max(0, Math.min(inputs.length - 1, st.input + dy));
+          if (naming) stopNaming();
+        } else if (dx && !naming) stepInputIcon(dx);
         break;
     }
     updateFocus();
@@ -1465,6 +1625,14 @@
     if (st.zone === Z.CITY) { closeCities(false); return; }
     if (st.zone === Z.KEY) { if (keyAsking) askRemoveKey(false); else closeKey(); return; }
     if (st.zone === Z.ABOUT) { closeAbout(); return; }
+    if (st.zone === Z.INPUTS) {
+      if (naming) { stopNaming(); return; }
+      setClass($('inputedit'), 'open', false);
+      openSettings();
+      for (var r = 0; r < rowsNow.length; r++) if (rowsNow[r].inputsRow) st.row = r;
+      updateFocus();
+      return;
+    }
     if (sheetOpen()) { closeSheets(); return; }
     if (st.zone === Z.DRAWER) { closeDrawer(); return; }
     if (st.zone !== Z.SHELF && shelf.length) { st.zone = Z.SHELF; updateFocus(); return; }
@@ -1474,7 +1642,7 @@
   /** The pointer focuses what it's over (the Magic Remote, or a mouse when previewing). */
   function hover(node, zone, index) {
     node.onmouseover = function () {
-      if (saverOn || (sheetOpen() !== (zone === Z.APPS || zone === Z.SETTINGS || zone === Z.EDIT || zone === Z.LANG || zone === Z.CITY || zone === Z.KEY || zone === Z.ABOUT))) return;
+      if (saverOn || (sheetOpen() !== (zone === Z.APPS || zone === Z.SETTINGS || zone === Z.EDIT || zone === Z.LANG || zone === Z.CITY || zone === Z.KEY || zone === Z.ABOUT || zone === Z.INPUTS))) return;
       if (zone === Z.DRAWER && st.zone !== Z.DRAWER) return;
       if (zone !== Z.DRAWER && st.zone === Z.DRAWER && zone !== Z.SHELF) return;
       if (zone === Z.TOP && index < 3 && !Data.hasKey()) return;   // the tabs are hidden without the picks
@@ -1490,6 +1658,7 @@
       else if (zone === Z.LANG) st.lang = index;
       else if (zone === Z.CITY) st.city = index;
       else if (zone === Z.KEY) st.key = index;
+      else if (zone === Z.INPUTS) st.input = index;
       updateFocus();
     };
     node.onclick = function () { node.onmouseover(); activate(); };
@@ -1512,8 +1681,19 @@
 
   // MARK: - calm-photos: a landscape behind the home screen and the screensaver; a bright set by day, a dark one at night
 
-  var PHOTOS = {day: ['photos/day-1.jpg', 'photos/day-2.jpg', 'photos/day-3.jpg', 'photos/day-4.jpg'],
-    night: ['photos/night-1.jpg', 'photos/night-2.jpg', 'photos/night-3.jpg', 'photos/night-4.jpg']};
+  // couch-look: couch-tv's backgrounds (web/photos/CREDITS.txt). The AI scenes need no credit; the Commons photos show
+  // their photographer and licence in a corner (CC BY and BY-SA ask for it).
+  var PHOTOS = {day: ['photos/scene-water.jpg', 'photos/scene-fog.jpg', 'photos/scene-dawn.jpg', 'photos/scene-golden.jpg',
+    'photos/grose-valley.jpg'],
+    night: ['photos/scene-night.jpg', 'photos/albury-storm.jpg', 'photos/tessellated-pavement.jpg',
+      'photos/aresquiers-beach.jpg', 'photos/vang-vieng-sunset.jpg']};
+  var PHOTO_CREDITS = {
+    'photos/grose-valley.jpg': 'Grose Valley · Diliff · CC BY-SA 3.0',
+    'photos/albury-storm.jpg': 'Albury · Thennicke · CC BY-SA 4.0',
+    'photos/tessellated-pavement.jpg': 'Tessellated Pavement · JJ Harrison · CC BY-SA 2.5',
+    'photos/aresquiers-beach.jpg': 'Aresquiers beach · Christian Ferrer · CC BY 4.0',
+    'photos/vang-vieng-sunset.jpg': 'Vang Vieng · Basile Morin · CC BY-SA 4.0'
+  };
   var PHOTO_EVERY = 5 * 60000, photo = {set: '', i: 0, at: 0, url: ''};
 
   /** Two layers that crossfade (opacity only), and a scrim over them that keeps the type readable. */
@@ -1521,6 +1701,7 @@
     var first = parent.querySelector('canvas') || parent.querySelector('.shift');   // over the gradients, under the type
     for (var i = 0; i < 2; i++) parent.insertBefore(el('div', 'ph'), first);
     parent.insertBefore(el('div', 'scrim'), first);
+    el('div', 'credit', parent);
   }
 
   function showPhoto(parent, url) {
@@ -1528,6 +1709,8 @@
     if (a.length < 2) return;
     var on = hasClass(a[0], 'on') ? a[0] : hasClass(a[1], 'on') ? a[1] : null, next = on === a[0] ? a[1] : a[0];
     if (on && on.getAttribute('data-url') === url) return;
+    var credit = parent.querySelector('.credit');
+    if (credit) credit.textContent = PHOTO_CREDITS[url] || '';
     next.style.backgroundImage = 'url(' + url + ')';
     next.setAttribute('data-url', url);
     setClass(next, 'on', true);
@@ -1729,8 +1912,14 @@
    * its Cancel or ↑ ↓ leave the field. Samsung's keyboard sends Done as 65376 and Cancel as 65385. True: handled here.
    */
   function typing(k) {
-    var sheet = st.zone === Z.CITY ? 'citypick' : st.zone === Z.KEY ? 'keypick' : '';
+    var sheet = st.zone === Z.CITY ? 'citypick' : st.zone === Z.KEY ? 'keypick' : st.zone === Z.INPUTS ? 'inputedit' : '';
     if (!sheet || !typingIn(sheet)) return false;
+    if (sheet === 'inputedit') {
+      if (k === TV.keys.ok || k === 65376) saveInputName();
+      else if (k === TV.keys.back || k === 27 || k === 65385) stopNaming();
+      else if (k === TV.keys.up || k === TV.keys.down) { closeField(sheet); move(0, k === TV.keys.up ? -1 : 1); }
+      return true;
+    }
     if (k === TV.keys.ok || k === 65376) { if (st.zone === Z.CITY) searchCity(); else saveKey(); }
     else if (k === TV.keys.back || k === 27 || k === 65385) { closeField(sheet); updateFocus(); }
     else if (k === TV.keys.up || k === TV.keys.down) { closeField(sheet); move(0, k === TV.keys.up ? -1 : 1); }
@@ -1765,9 +1954,10 @@
     TV.apps(function (list) {
       apps = list.filter(function (a) { return !hidden(a); });
       Data.setApps(apps);
-      pickShelf();
+      pickShelf();   // the apps at once, in case the TV is slow to list its inputs
       TV.inputs(function (list2) {
         inputs = list2;
+        pickShelf();   // couch-inputs: after the inputs, which the shelf can hold too
         if (done) done();
       });
     });

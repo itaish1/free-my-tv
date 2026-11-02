@@ -1,63 +1,59 @@
 Background photos (web/photos/)
 ===============================
 
-Bundled in the app; nothing is downloaded at runtime. Each photo was taken from Wikimedia Commons, where it is published
-under CC0 1.0 (public domain dedication), originally from Unsplash (photos uploaded to Unsplash before June 2017 were
-released under CC0). Cropped to 16:9, resized to 1920x1080 and re-encoded as JPEG. CC0 requires no attribution; the
-photographers are credited here anyway.
+Bundled in the app; nothing is downloaded at runtime. All ten come from couch-tv
+(https://github.com/Seagey/couch-tv, tv-home/web/backgrounds/, commit 0853604; MIT License, Copyright (c) 2026 Seagey),
+which had already cropped and resized them to 1920x1080. The day set (brighter) shows by day, the night set (darker) at
+night; home.js (PHOTOS) lists them. Changes made here: grose-valley, tessellated-pavement and vang-vieng-sunset were
+re-encoded as JPEG at quality 76 to keep the app small; the other seven are couch-tv's files unchanged.
 
-day-1.jpg  (day)
-  Title:        Sun shining on a lake (Unsplash).jpg
-  Photographer: Justin Luebke jluebke
-  Commons page: https://commons.wikimedia.org/wiki/File:Sun_shining_on_a_lake_(Unsplash).jpg
-  Original:     https://unsplash.com/photos/ARSCXacOtkY
-  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+The five Wikimedia Commons photos are under Creative Commons licences that allow redistribution with attribution: the
+home screen and the screensaver show the photographer and licence in a corner while each one is on screen, and this file
+credits them in full. The BY-SA ones, as adapted (cropped, resized, re-encoded), stay under their same licence.
+Licences checked on the Commons pages on 2 Nov 2026.
 
-day-2.jpg  (day)
-  Title:        Pond over a lake (Unsplash).jpg
-  Photographer: Koen Rayer koenrayer
-  Commons page: https://commons.wikimedia.org/wiki/File:Pond_over_a_lake_(Unsplash).jpg
-  Original:     https://unsplash.com/photos/zDEy_rlUkt0
-  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
 
-day-3.jpg  (day)
-  Title:        Mountains by the lake (Unsplash).jpg
-  Photographer: Georgia Dixon georgiadixon
-  Commons page: https://commons.wikimedia.org/wiki/File:Mountains_by_the_lake_(Unsplash).jpg
-  Original:     https://unsplash.com/photos/txuZ6ATkPMk
-  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+AI scenes (couch-tv)
+--------------------
+scene-water.jpg (day), scene-fog.jpg (day), scene-dawn.jpg (day), scene-golden.jpg (day), scene-night.jpg (night)
+  Made for couch-tv with an AI image model from text only (no source photo); not real places.
+  Source:   https://github.com/Seagey/couch-tv/tree/main/tv-home/web/backgrounds
+  Terms:    couch-tv's CREDITS.md: "Use them however you like." (the repository is MIT, Copyright (c) 2026 Seagey)
 
-day-4.jpg  (day)
-  Title:        Lake Placid, NY (Unsplash).jpg
-  Photographer: Alex Shutin fiveamstories
-  Commons page: https://commons.wikimedia.org/wiki/File:Lake_Placid,_NY_(Unsplash).jpg
-  Original:     https://unsplash.com/photos/kKvQJ6rK6S4
-  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
 
-night-1.jpg  (evening/night)
-  Title:        Mountainous landscape at dusk (Unsplash).jpg
-  Photographer: Joey Kyber jtkyber1
-  Commons page: https://commons.wikimedia.org/wiki/File:Mountainous_landscape_at_dusk_(Unsplash).jpg
-  Original:     https://unsplash.com/photos/Qcvjbkw1N0M
-  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+Wikimedia Commons photos
+------------------------
+grose-valley.jpg  (day)
+  Title:        Grose Valley, Blue Mountains, NSW, Australia (April 2013)
+  Photographer: Diliff
+  Commons page: https://commons.wikimedia.org/wiki/File:Grose_Valley,_NSW,_Australia_-_April_2013.jpg
+  License:      CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/)
+  Changes:      cropped to 16:9 and resized to 1920x1080 (couch-tv); re-encoded at JPEG quality 76 (here)
 
-night-2.jpg  (evening/night)
-  Title:        Peloponnese sunset over mountains and water (Unsplash).jpg
-  Photographer: Joe deSousa mustangjoe
-  Commons page: https://commons.wikimedia.org/wiki/File:Peloponnese_sunset_over_mountains_and_water_(Unsplash).jpg
-  Original:     https://unsplash.com/photos/0MGhdhObDXA
-  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+albury-storm.jpg  (night)
+  Title:        Cumulonimbus sunset panorama, Albury NSW Australia
+  Photographer: Thennicke
+  Commons page: https://commons.wikimedia.org/wiki/File:Cumulonimbus_sunset_panorama,_Albury_NSW_Australia.jpg
+  License:      CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)
+  Changes:      cropped to 16:9 and resized to 1920x1080 (couch-tv)
 
-night-3.jpg  (evening/night)
-  Title:        MountainsWithStars.jpg
-  Photographer: Teddy Kelley
-  Commons page: https://commons.wikimedia.org/wiki/File:MountainsWithStars.jpg
-  Original:     https://web.archive.org/web/20161220154656/https://unsplash.com/photos/_4Ib-a8g9aA
-  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+tessellated-pavement.jpg  (night)
+  Title:        Tessellated Pavement Sunrise Landscape, Tasmania
+  Photographer: JJ Harrison (https://www.jjharrison.com.au/)
+  Commons page: https://commons.wikimedia.org/wiki/File:Tessellated_Pavement_Sunrise_Landscape.jpg
+  License:      CC BY-SA 2.5 (https://creativecommons.org/licenses/by-sa/2.5/)
+  Changes:      cropped to 16:9 and resized to 1920x1080 (couch-tv); re-encoded at JPEG quality 76 (here)
 
-night-4.jpg  (evening/night)
-  Title:        Yosemite cliff under stars (Unsplash).jpg
-  Photographer: Jordan McQueen jordanfmcqueen
-  Commons page: https://commons.wikimedia.org/wiki/File:Yosemite_cliff_under_stars_(Unsplash).jpg
-  Original:     https://unsplash.com/photos/DgEA7saT8FQ
-  License:      CC0 1.0 Universal (https://creativecommons.org/publicdomain/zero/1.0/)
+aresquiers-beach.jpg  (night)
+  Title:        Sunset on the Aresquiers beach, France
+  Photographer: Christian Ferrer
+  Commons page: https://commons.wikimedia.org/wiki/File:Sunset_on_the_Aresquiers_beach.jpg
+  License:      CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+  Changes:      cropped to 16:9 and resized to 1920x1080 (couch-tv)
+
+vang-vieng-sunset.jpg  (night)
+  Title:        Colorful sky with orange clouds reflecting in the water of a paddy field, at sunset, Vang Vieng, Laos
+  Photographer: Basile Morin
+  Commons page: https://commons.wikimedia.org/wiki/File:Colorful_sky_with_orange_clouds_reflecting_in_the_water_of_a_paddy_field,_at_sunset,_Vang_Vieng,_Laos.jpg
+  License:      CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/)
+  Changes:      cropped to 16:9 and resized to 1920x1080 (couch-tv); re-encoded at JPEG quality 76 (here)

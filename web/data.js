@@ -89,6 +89,16 @@ var Prefs = (function () {
     shelf: function () { return pick('shelf', null); },
     /** The shelf_apps of the build that last set the shelf, so a new one wins once over the TV's choice. */
     shelfConfig: function () { return pick('shelfConfig', ''); },
+    /** couch-inputs: the names and glyphs given on the TV, {hdmi1: {name: 'Apple TV', icon: 'box'}} (over config.properties'). */
+    inputLook: function (key) { return pick('inputLooks', {})[key] || null; },
+    setInputLook: function (key, look) {
+      var all = {}, old = pick('inputLooks', {});
+      for (var k in old) if (old.hasOwnProperty(k) && k !== key) all[k] = old[k];
+      if (look) all[key] = look;
+      this.set('inputLooks', all);
+    },
+    /** The inputs= of the build that last put its inputs on the shelf, so a new one adds them once. */
+    inputsConfig: function () { return pick('inputsConfig', ''); },
     /** The weather's city, picked on the TV (Home Settings → City), or config.properties' (or the time zone's). */
     city: function () { return pick('city', Place.city); },
     latitude: function () { return pick('latitude', Place.lat); },

@@ -504,7 +504,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .cell.focus .face { -webkit-transform: scale(1.08); transform: scale(1.08); box-shadow: 0 16px 34px rgba(0, 0, 0, 0.55), inset 0 0 0 2px rgba(255, 255, 255, 0.4); }
 .cell.focus .label { color: #FFF; }
 
-#settings .box, #shelfedit .box, #langpick .box, #citypick .box, #keypick .box, #about .box {
+#settings .box, #shelfedit .box, #inputedit .box, #langpick .box, #citypick .box, #keypick .box, #about .box {
   position: absolute;
   left: 560px;
   top: 150px;
@@ -527,7 +527,7 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .box .row .value .sym { width: 26px; height: 26px; vertical-align: -3px; }
 .box .row.dim { color: rgba(255, 255, 255, 0.4); }
 #about .row .value { font-feature-settings: 'tnum'; }
-#citypick .row.field input, #keypick .row.field input {
+#citypick .row.field input, #keypick .row.field input, #inputedit .row.field input {
   width: 100%;
   height: 70px;
   margin: 0;
@@ -539,9 +539,9 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
   font: inherit;
   line-height: 70px;
 }
-#citypick .row.field, #keypick .row.field { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18); }
-#citypick .row.field input::-webkit-input-placeholder, #keypick .row.field input::-webkit-input-placeholder { color: rgba(255, 255, 255, 0.4); }
-#citypick .row.field input::placeholder, #keypick .row.field input::placeholder { color: rgba(255, 255, 255, 0.4); }
+#citypick .row.field, #keypick .row.field, #inputedit .row.field { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.18); }
+#citypick .row.field input::-webkit-input-placeholder, #keypick .row.field input::-webkit-input-placeholder, #inputedit .row.field input::-webkit-input-placeholder { color: rgba(255, 255, 255, 0.4); }
+#citypick .row.field input::placeholder, #keypick .row.field input::placeholder, #inputedit .row.field input::placeholder { color: rgba(255, 255, 255, 0.4); }
 #citypick .row { overflow: hidden; text-overflow: ellipsis; }
 #about .row .value.cut { overflow: hidden; text-overflow: ellipsis; }
 .box .hint { padding: 14px 18px 0; font-size: 22px; font-weight: 500; color: rgba(255, 255, 255, 0.5); }
@@ -902,4 +902,32 @@ button { font: inherit; color: inherit; background: none; border: 0; padding: 0;
 .couch.photos.night #ambient .scrim {
   background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.36) 45%, rgba(0, 0, 0, 0.5) 100%);
   background: linear-gradient(rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.36) 45%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+/* MARK: - couch-inputs: an input on the shelf, the apps' square glass with its glyph (web/inputs) over its name */
+.tile.input {
+  background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.12));
+  background: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.12));
+  color: #FFF;
+}
+.couch.calm .tile.input, .couch.calm.night .tile.input { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.22), 0 6px 18px rgba(0, 0, 0, 0.26); }
+.night .tile.input {
+  background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07));
+  background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07));
+}
+.tile.input .sym { position: absolute; left: 50%; top: 24%; width: 46%; height: 46%; margin-left: -23%; -webkit-mask-size: contain; mask-size: contain; }
+.tile.input .name {
+  position: absolute; left: 7%; right: 7%; bottom: 11%; text-align: center; font-size: 19px; font-weight: 600; line-height: 24px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.calm:not(.couch) .tile.input .sym { top: 14%; width: 30%; height: 50%; margin-left: -15%; }
+.calm:not(.couch) .tile.input .name { font-size: 22px; bottom: 9%; }
+/* The shelf editor says which port an input is on; Home Settings → Inputs shows each one's glyph and name */
+#shelfedit .row .port { margin-left: 14px; font-size: 24px; font-weight: 500; color: rgba(255, 255, 255, 0.45); }
+#inputedit .row .value .sym { width: 34px; height: 34px; vertical-align: -7px; margin: 0 12px 0 4px; -webkit-mask-size: contain; mask-size: contain; }
+#inputedit .row .value .nm { display: inline-block; max-width: 360px; overflow: hidden; text-overflow: ellipsis; vertical-align: top; }
+/* The photographer and licence of a Commons photo (web/photos/CREDITS.txt), small in the corner */
+.credit {
+  position: absolute; right: 36px; bottom: 14px; z-index: 3; font-size: 15px; font-weight: 500; letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.55); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5); pointer-events: none;
 }
